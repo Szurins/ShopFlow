@@ -1,0 +1,57 @@
+name: dbt CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  dbt-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Setup dbt Profile
+        run: |
+          mkdir -p ~/.dbt
+          cat <<EOF > ~/.dbt/profiles.yml
+          transform:
+            target: ci
+            outputs:
+              ci:
+                type: databricks
+                schema: dbt_schema_ci
+                host: ${{ secrets.DBT_DATABRICKS_HOST }}
+                http_path: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
+                token: ${{ secrets.DBT_DATABRICKS_TOKEN }}
+          EOF
+
+      - name: Install dbt packages
+        run: dbt deps
+        working-directory: transform
+
+      - name: Debug connection
+        run: dbt debug
+        working-directory: transform
+
+      - name: Run dbt tests
+        run: dbt test
+        working-directory: transform
