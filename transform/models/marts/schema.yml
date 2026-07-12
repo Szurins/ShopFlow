@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: "Dimension table containing customer info joined with their geolocations"
+    columns:
+      - name: customer_id
+        description: "Primary key of the customer record"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_products
+    description: "Dimension table containing product info and categories in English"
+    columns:
+      - name: product_id
+        description: "Primary key of the product record"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_sellers
+    description: "Dimension table containing seller info joined with their geolocations"
+    columns:
+      - name: seller_id
+        description: "Primary key of the seller record"
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_orders
+    description: "Fact table containing order level details and summarized values"
+    columns:
+      - name: order_id
+        description: "Primary key of the order"
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key linking to customer dimension"
+        tests:
+          - not_null
+
+  - name: fct_order_items
+    description: "Fact table containing line-item level details for each order"
+    columns:
+      - name: order_item_key
+        description: "Surrogate primary key of the order item record"
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: "Order key"
+        tests:
+          - not_null
